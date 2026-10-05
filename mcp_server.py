@@ -130,5 +130,15 @@ def get_tables() -> list[dict]:
     return _run_select(query)
 
 
+# local
+# if __name__ == "__main__":
+#     mcp.run()
+
+# http
+
 if __name__ == "__main__":
-    mcp.run()
+    mcp.run(
+        transport="http",
+        host="192.168.1.213",
+        port=8000
+    )

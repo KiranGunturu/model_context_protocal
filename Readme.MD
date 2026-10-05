@@ -17,8 +17,9 @@ This guide uses Claude Desktop as the client and **`my-datagpt-server`** as the 
 7. [Seeing the tools a server exposes](#7-seeing-the-tools-a-server-exposes)
 8. [Allowing or denying specific tools](#8-allowing-or-denying-specific-tools)
 9. [Local (stdio) vs. remote (HTTPS) servers](#9-local-stdio-vs-remote-https-servers)
-10. [Troubleshooting](#10-troubleshooting)
-11. [Security checklist](#11-security-checklist)
+10. [Exposing a local MCP server with ngrok](#10-exposing-a-local-mcp-server-with-ngrok)
+11. [Troubleshooting](#11-troubleshooting)
+12. [Security checklist](#12-security-checklist)
 
 ---
 
@@ -283,19 +284,14 @@ The fastest way to open it is **Claude Desktop → Settings → Developer → Ed
 {
   "mcpServers": {
     "my-datagpt-server": {
-      "command": "C:\\Users\\<you>\\.local\\bin\\uv.exe",
+      "command": "C:\\Users\\kiran\\OneDrive\\Documents\\model_context_protocal\\mcp\\Scripts\\python.exe",
       "args": [
-        "--directory", "C:\\Projects\\datagpt-mcp",
-        "run", "server.py"
-      ],
-      "env": {
-        "SQL_SERVER": "localhost\\MSSQLSERVER03",
-        "SQL_DATABASE": "retail"
-      }
+        "C:\\Users\\kiran\\OneDrive\\Documents\\model_context_protocal\\mcp_server.py"
+      ]
     },
     "filesystem": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "C:\\Users\\<you>\\Documents\\data"]
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "C:\\Users\\kiran\\Documents\\data"]
     },
     "internal-jira": {
       "command": "npx",
@@ -307,8 +303,8 @@ The fastest way to open it is **Claude Desktop → Settings → Developer → Ed
 
 **Rules that commonly cause problems:**
 
-- On Windows, **escape backslashes** in JSON (`\\`). This also applies to the SQL instance name.
-- Use **absolute paths**. Claude Desktop doesn't inherit your shell's `PATH` or working directory.
+- On Windows, **escape backslashes** in JSON (`\\`).
+- Use **absolute paths**. Point `command` at the virtual environment's `python.exe` (here, the `mcp` venv) so the server runs with the packages installed in it. Claude Desktop doesn't inherit your shell's `PATH` or working directory.
 - The file must be **valid JSON**: no trailing commas and no comments.
 - After saving, **fully quit Claude Desktop** (on Windows, from the system tray; on macOS, ⌘Q) and reopen it. Closing the window isn't enough.
 
@@ -336,14 +332,22 @@ The quickest way is the official **Python SDK** and its `FastMCP` API. Official 
 
 ### 6.1 Set up the project
 
-```bash
-# install uv (https://docs.astral.sh/uv/) then:
-uv init datagpt-mcp
-cd datagpt-mcp
-uv add "mcp[cli]" pyodbc sqlparse yfinance
+```powershell
+cd C:\Users\kiran\OneDrive\Documents\model_context_protocal
+python -m venv mcp                 # creates the "mcp" virtual environment
+mcp\Scripts\activate
+pip install "mcp[cli]" pyodbc sqlparse yfinance
 ```
 
-### 6.2 `server.py`: a reference implementation of `my-datagpt-server`
+Resulting layout:
+
+```text
+C:\Users\kiran\OneDrive\Documents\model_context_protocal\
+├── mcp\                 ← virtual environment (mcp\Scripts\python.exe)
+└── mcp_server.py        ← the MCP server
+```
+
+### 6.2 `mcp_server.py`: a reference implementation of `my-datagpt-server`
 
 > Treat this as an illustrative example that matches the tool signatures exposed by `my-datagpt-server`. Adapt the details to your real code.
 
@@ -479,17 +483,19 @@ flowchart LR
 
 ### 6.3 Test before connecting it to Claude
 
-```bash
+```powershell
 # Interactive browser UI to list and call tools
-npx @modelcontextprotocol/inspector uv --directory C:\Projects\datagpt-mcp run server.py
+npx @modelcontextprotocol/inspector C:\Users\kiran\OneDrive\Documents\model_context_protocal\mcp\Scripts\python.exe C:\Users\kiran\OneDrive\Documents\model_context_protocal\mcp_server.py
 
-# or, with the Python CLI
-uv run mcp dev server.py
+# or, with the Python CLI (venv activated)
+cd C:\Users\kiran\OneDrive\Documents\model_context_protocal
+mcp\Scripts\activate
+mcp dev mcp_server.py
 ```
 
 ```mermaid
 flowchart LR
-    W[Write server.py] --> I[Test in MCP Inspector]
+    W[Write mcp_server.py] --> I[Test in MCP Inspector]
     I -- bugs --> W
     I -- OK --> C[Add to claude_desktop_config.json]
     C --> R[Restart Claude Desktop]
@@ -497,7 +503,7 @@ flowchart LR
     T --> P[Set per-tool permissions]
 ```
 
-> 🔍 **Zoom:** [Open interactive view (pan/zoom)](https://mermaid.live/view#pako:eNpNkEFuwyAQRa8yYl3nAF1UqpyN1VaNHKte4CiiMHZoDVgwtLKi3L1AvCgr5vH-MHBl0ilkj8DG2f3Ki_AEr-1gIa2e914TQkD_g363rCeoqidoeIeBQFt4qw_Q2LCgJOdP91CTHPiMUyhu_w--vxRU82elgBzIWUSFZ4Xhm9xyls6Oetp9BWe3VnXxW96m6_JcdQnA_h7YpLZIHf9Ar8c19XVzyLOlp9BWGbRxs7tiH_gRCRb0VRbyxugQtLMhaewBmElEaJW_5TowuqDBIRUDUziKONPAblkTkdxxtTIdkY-YSFyUINxrMXlhNnz7A0_wcoA)
+> 🔍 **Zoom:** [Open interactive view (pan/zoom)](https://mermaid.live/view#pako:eNpNkEFuwyAQRa8yYl3nAF1UqpyN1VaNHKte4MiiMHZoDVgwtIqi3L1AvCgr5vH-MHBl0ilkj8Cmxf3Ks_AEr-1gIa2e914TgpHrGND_oN-tlxNU1RM0vMNAoC281QdobFhRkvOne7BJDnzGORS3_wffXwqq-bNSQA7kIqLCUWH4JreO0tlJz7uv4OzWqi5-y9t0XZ6tLgHY3wOb1Bap4x_o9XRJfd0S8mzpObRVBm3c7K7YB35EghV9lYW8MToE7WxIGnsAZhIRWuWvuQ6MzmhwSMXAFE4iLjSwW9ZEJHe8WJmOyEdMJK5KEO61mL0wG779AYkCdB8)
 
 
 ---
@@ -604,7 +610,13 @@ if "get_engine" in ENABLED:
 ```
 
 ```json
-"env": { "ENABLED_TOOLS": "get_tables,get_schema,validate_select_query,run_query" }
+"my-datagpt-server": {
+  "command": "C:\\Users\\kiran\\OneDrive\\Documents\\model_context_protocal\\mcp\\Scripts\\python.exe",
+  "args": [
+    "C:\\Users\\kiran\\OneDrive\\Documents\\model_context_protocal\\mcp_server.py"
+  ],
+  "env": { "ENABLED_TOOLS": "get_tables,get_schema,validate_select_query,run_query" }
+}
 ```
 
 ---
@@ -698,7 +710,7 @@ sequenceDiagram
 3. Complete the OAuth sign-in if the server asks for it.
 4. Set tool permissions as described in §8.
 
-> Custom connectors may be brokered through Anthropic's cloud, so the URL generally needs to be reachable from the public internet. `localhost` or VPN-only URLs won't work this way.
+> Custom connectors may be brokered through Anthropic's cloud, so the URL generally needs to be reachable from the public internet. `localhost` or VPN-only URLs won't work this way. To expose a server running on your laptop, use a tunnel such as **ngrok** (see §10).
 
 **Option B: `mcp-remote` bridge (for internal or VPN-only servers)**
 
@@ -724,9 +736,231 @@ flowchart LR
 > 🔍 **Zoom:** [Open interactive view (pan/zoom)](https://mermaid.live/view#pako:eNotjk1vgzAMhv-K5dMmDfU-Tb3AYZPGhKDqhfSQEbdFTTAyTjtU-t-XrvPt_XrkK3bsCF8B954v3dGKwmdtBkiXF23ubXQEBU0n5XEHWbZeJnU9L1DWrcHQjZlQYKW3b1mtnzx31sMo_DM_G9w9OGX9tzP4vtlUDfCZBGaOAgPpheUEK9hWXwYXqJv2Y1CSIUEeWCjzCiaStEk0fAEMJMH27v7y1aAeKZBJwqCjvY1eDd7uNRuVm3noUqQSKTlxdFap6O1BbPi3b79T_lTh)
 
 
+## 10. Exposing a local MCP server with ngrok
+
+### 10.1 What is ngrok?
+
+[ngrok](https://ngrok.com) is a **secure tunneling service**. It gives a server running on your laptop a **public HTTPS URL**, such as `https://smartness-protozoan-container.ngrok-free.dev`, and forwards every request through an encrypted tunnel to a local port, such as `http://localhost:8000`.
+
+The ngrok **agent** on your machine opens an **outbound** connection to ngrok's cloud edge. Requests arriving at the public URL travel back down that connection. You don't open any inbound firewall ports or change router settings.
+
+### 10.2 What problem does it solve for MCP?
+
+Claude **custom connectors** (§9.3) need a remote MCP server URL that is reachable from the internet over **HTTPS**. Your `my-datagpt-server` runs on your laptop and talks to a local SQL Server instance (`MSSQLSERVER03`), so the internet can't reach it directly.
+
+| Problem | Without ngrok | With ngrok |
+|---|---|---|
+| Claude's cloud can't reach `localhost` or `192.168.x.x` | Connector fails | Public URL forwards to localhost |
+| Home or office router uses NAT and a firewall | You'd need port forwarding and firewall rules | Outbound tunnel only, no inbound ports |
+| HTTPS needs a domain and a TLS certificate | Buy a domain, set up certificates | ngrok terminates TLS with a valid certificate |
+| Moving to the cloud means deploying the server plus a DB connection | Containers, VPC, secrets and so on | Data stays on your machine, and you only expose the MCP endpoint |
+| Debugging remote calls is hard | Add logging and redeploy | ngrok web inspector at `http://127.0.0.1:4040` shows and replays every request |
+| Using your server from claude.ai web or mobile | Not possible with a stdio-only server | Works anywhere the connector is enabled |
+
+**When to use it:** demos, prototyping, testing a remote MCP server before deploying it, and using your local tools from claude.ai web or mobile.
+
+**When not to use it:** production, or anything that touches real or regulated data. For those, deploy the server properly (for example on AWS ECS, App Runner, or Lambda) behind proper authentication.
+
+### 10.3 Architecture
+
+```mermaid
+flowchart LR
+    subgraph Anthropic["Anthropic cloud"]
+        CL["Claude<br/>(custom connector client)"]
+    end
+    subgraph Ngrok["ngrok cloud edge"]
+        EDGE["Public HTTPS URL<br/>smartness-protozoan-container<br/>.ngrok-free.dev<br/>(TLS terminated here)"]
+    end
+    subgraph Laptop["Your laptop"]
+        AGENT["ngrok agent<br/>(ngrok http 8000)"]
+        SRV["my-datagpt-server<br/>Uvicorn on 127.0.0.1:8000<br/>endpoint: /mcp"]
+        DB[("SQL Server<br/>MSSQLSERVER03<br/>DB: retail")]
+        INSP["Web inspector<br/>127.0.0.1:4040"]
+    end
+    CL -->|"HTTPS POST /mcp"| EDGE
+    AGENT -->|"outbound tunnel<br/>(opened by the agent)"| EDGE
+    EDGE -->|"forwards request<br/>through the tunnel"| AGENT
+    AGENT -->|"http://localhost:8000/mcp"| SRV
+    SRV --> DB
+    AGENT --- INSP
+```
+
+> 🔍 **Zoom:** [Open interactive view (pan/zoom)](https://mermaid.live/view#pako:eNp9U2Fv0zAQ_Ssnf1ol0mYwCRShSVtbDaRQStMNoYUPjn1NIhI7OPamsu2_c7FLR5iE8yHO-b2753eXBya0RJYA2zX6XlTcWEg3uQJavStKw7sKLpStjO5qcZuz4x5Eo53M2fcAHtY8JcC84U7i-8LMzk-E661uQWilUFhtiFOjspMjC5X8p9aqNPoHpVHDO9QAlCWOCi0XV0vCrF3RkJAP2-06g-tN6ov2Ld1BYd9HndFW_9JcRSTA8lqh8Yipzx3tDOJU4l2Quk0zsGjaWnGLEio0-D-ZKe-s7kjDN-0MNP5rJPHiarnaHu_BS7p2KBQClbUdvIvjeDJiZZsb4rT7SHLLy85GPZq7g-zru1poo0ArOH39dhrTc5oMKfwpSex0rWwCs1aMpSwub09yln1JIXvO9imjQLbc3Cw38RsfWVwmYJB8anI2-Yv-cZWtSdRXLKBWfecb6QnPKs7is_ilWfMUouj8MWehQevP2fYg7tF3MKC8UQegdrbQTkmwjiamCYbpDhV1pNiDrTA4ORmnGHaHDDtt7rmRPd3kp8M-eD5MrCsrzw-ZB74v_FLD0JlkNmu04E2le-st_iOb-hMYtBnw5O04Q-TtyhV7BaylceK1HH6uh5xR8ZamOIGcSdxx19icPQ0w7qzO9krQkTUOKeI6aj8uak6z1h7CT78Bt34lsQ)
+
+
+### 10.4 Request flow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as User (Claude app)
+    participant C as Claude (Anthropic cloud)
+    participant N as ngrok edge (HTTPS)
+    participant A as ngrok agent (laptop)
+    participant S as my-datagpt-server (127.0.0.1:8000)
+    participant DB as SQL Server (retail)
+
+    Note over A,N: At startup the agent opens an outbound tunnel to the edge
+    U->>C: "List the tables in my retail DB"
+    C->>N: POST https://...ngrok-free.dev/mcp (tools/call get_tables)
+    N->>A: request sent through the tunnel
+    A->>S: POST http://localhost:8000/mcp
+    S->>DB: SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
+    DB-->>S: expenses, hr_policy_docs, orders
+    S-->>A: JSON-RPC result
+    A-->>N: response
+    N-->>C: HTTPS response
+    C-->>U: "You have 3 tables: expenses, hr_policy_docs, orders"
+```
+
+> 🔍 **Zoom:** [Open interactive view (pan/zoom)](https://mermaid.live/view#pako:eNqNk8Fu2zAMhl-F8CkDGifdDht8KOA4KdohcbI6OQwIEKg2axuzJU2iigVF332U5WDDkMPsk8iP5E9SeotKVWGUQGTxp0NZ4rIVtRH9UQJ_wpGSrn9GM55LUgYOICwcLBqYZJ1wFYLQ-kMgtDDUlq0WkiDz3EhMUkmNUbotoeyUq67gucdlbdQPwKrmkIf9fldcAdM_oKiRDZNOaFLXJBQe7c_TSpCoNU1Z9KvXffvxczzn_zb5Mp_PrwQuFz6y-LaGYgwxSKLtGA1wrghBeU96kyeQEljieKeBGhx1KY3SgpCgHD0rJysgJyV2QGqgfJsh22F6d5clcIzWraXBR-K5QwutZPkQarOoYxT4jHmuutsWe2iItE1msziOh6FMXwxiXOHrrC81TEipzs5K0XVQI51C3rHjnNOkCafn3XNd60X7Nbm6CSIGuYFNmS3-KskVO8VpG2VpmKIvF9CC0eUigWK1XmV72KeL9eqUp5sV3D9tN_CY32-fNun-cZufiuxhtUnjASlC9HIxDaXwl58f2htozEmrri3Pp0qVfFamQmMvxUITX4ttPn3aZdyNdR1dRIdBsU0rznVpO4x7uGD_-DLvO_hVfFcOGvGK8Glcxn8o4vVENxD1aHrRVv5dvR0jnmSPx8jnrPBFeHHRu8f88yrOsmQXGYdscZpv6uUNjub334tOK1U)
+
+
+### 10.5 Step-by-step setup
+
+**Step 1: Install ngrok and add your auth token (one time only)**
+
+```powershell
+winget install ngrok.ngrok          # or download from https://ngrok.com/download
+ngrok config add-authtoken <YOUR_NGROK_AUTHTOKEN>   # from dashboard.ngrok.com
+```
+
+**Step 2: Make the server support both stdio and HTTP**
+
+Keep one file that works both ways. Claude Desktop's config (§5.3) starts it in **stdio** mode, and you start it with `--http` when you want the tunnel.
+
+```python
+import sys
+
+if __name__ == "__main__":
+    if "--http" in sys.argv:
+        # Bind to 127.0.0.1 so ngrok (which forwards to localhost) can reach it,
+        # without exposing the server to the rest of your LAN.
+        mcp.run(transport="http", host="127.0.0.1", port=8000)
+    else:
+        mcp.run()  # stdio, used by claude_desktop_config.json
+```
+
+> If you use `from fastmcp import FastMCP` (FastMCP 2.x), the transport name is `"http"`. If you use the official SDK (`from mcp.server.fastmcp import FastMCP`), it's `"streamable-http"`, and you set host and port through `mcp.settings` (see §9.2).
+
+**Step 3: Start the server (terminal 1)**
+
+```powershell
+cd C:\Users\kiran\OneDrive\Documents\model_context_protocal
+mcp\Scripts\activate
+python mcp_server.py --http
+# INFO: Uvicorn running on http://127.0.0.1:8000
+```
+
+**Step 4: Start the tunnel (terminal 2)**
+
+```powershell
+ngrok http 8000
+# or reuse your free static domain so the URL never changes:
+ngrok http --url=smartness-protozoan-container.ngrok-free.dev 8000
+```
+
+ngrok then shows:
+
+```text
+Forwarding   https://smartness-protozoan-container.ngrok-free.dev -> http://localhost:8000
+Web Interface http://127.0.0.1:4040
+```
+
+**Step 5: Test the public URL with MCP Inspector**
+
+```powershell
+npx @modelcontextprotocol/inspector
+```
+
+In the Inspector, set **Transport** to *Streamable HTTP* and **URL** to `https://smartness-protozoan-container.ngrok-free.dev/mcp`, then click **Connect** and **List Tools**. You should see all six tools.
+
+**Step 6: Add it to Claude as a custom connector**
+
+1. In Claude (desktop, web, or mobile settings), go to **Settings → Connectors → Add custom connector**.
+2. **Name:** `datagpt`
+3. **URL:** `https://smartness-protozoan-container.ngrok-free.dev/mcp`. **Don't leave off `/mcp`.**
+4. Save, then open the connector and set per-tool permissions (§8). For example, set `run_query` to *Needs approval* and block `get_engine`.
+5. Start a new chat, enable the connector in the tools menu, and ask *"List the tables in my retail DB."*
+
+```mermaid
+flowchart LR
+    S1["1. Install ngrok<br/>+ add authtoken"] --> S2["2. Add --http switch<br/>bind 127.0.0.1:8000"]
+    S2 --> S3["3. python mcp_server.py --http"]
+    S3 --> S4["4. ngrok http 8000"]
+    S4 --> S5["5. Test URL/mcp<br/>in MCP Inspector"]
+    S5 -- fails --> T["Check 10.7<br/>troubleshooting"]
+    T --> S3
+    S5 -- "tools listed" --> S6["6. Claude: Add custom connector<br/>URL ends with /mcp"]
+    S6 --> S7["Set tool permissions<br/>and use in chat"]
+```
+
+> 🔍 **Zoom:** [Open interactive view (pan/zoom)](https://mermaid.live/view#pako:eNpVkd2K2zAQhV9l0G03ip3fEpaFJb0ppFCS9KouiyJNIhFbMtK4IYS8e8dyaFrrytL5zpyZuQkdDIoViGMdLtqqSLDZVh7425U_K1FK-OoTqboGf4rh_HqI47dPoIwB1ZGlcEZfiV8wGr3BbsLARMI7P45GlqiFdHGkbYYOzhsoJ0tZ8ClXn4uiYPBRajIYTNlgKqG9kg0eGt1-JIy_Mcr2-nB8ItMBmTEyk0M4yDX_d54NsjnL5hL2mAh-bDdj9s6pnIdv6-99jy1qCvEJzhmEo3J1yg57Nlhb1GcoC7nMLMXQHWpMNgRy_vQX3T-a-deoEhQCW9UuEZpKDJIFmy4krGvVGVzlwekuUWhAB-9zoFyJEwN6k4DHaaEP_8y5GKyWbLVDgr4MtBgbl5ILPmVe8ei7hMDd8o4pw-IFRMM65Uy__xsntNhgxT-VMHhUXc3Cey_jTYfd1Wt-otgh33StUYRfnDpF1Tyu738AKQmzkQ)
+
+
+### 10.6 Local (stdio) vs. ngrok (HTTP) side by side
+
+| | Local stdio (config file) | ngrok + custom connector |
+|---|---|---|
+| Config | `claude_desktop_config.json` (§5.3) | Settings → Connectors → URL |
+| How it starts | Claude Desktop launches `mcp_server.py` itself | You run `python mcp_server.py --http` and `ngrok http 8000` |
+| Works in | Claude Desktop on this laptop only | Claude desktop, web, and mobile |
+| Requires laptop on? | Yes | Yes, and both terminals must stay running |
+| Exposure | None (process pipes only) | **Public internet URL** |
+| Auth | Your OS user | None by default, so add it yourself (§10.8) |
+
+### 10.7 Troubleshooting ngrok
+
+| Symptom (ngrok console or 4040 inspector) | Cause | Fix |
+|---|---|---|
+| **502 Bad Gateway** on every request | ngrok forwards to `localhost:8000`, but the server is bound to another address (for example `host="192.168.1.213"`) or isn't running | Bind the server to `127.0.0.1`, **or** run `ngrok http 192.168.1.213:8000`. Also confirm Uvicorn is running. |
+| 404 / 405 / 502 on `POST /` | Connector URL is missing `/mcp` | Use `https://<your-domain>.ngrok-free.dev/mcp` |
+| **421 Invalid Host header** | The server rejects the ngrok hostname (DNS-rebinding protection) | `ngrok http 8000 --host-header=localhost:8000`, or allow the ngrok host in the server's settings |
+| `ERR_NGROK_4018` / auth errors | No auth token configured | `ngrok config add-authtoken <token>` |
+| Connector worked yesterday, fails today | Laptop asleep, a terminal was closed, or the URL changed | Restart both processes. Use `--url=<static domain>` so the URL stays the same. |
+| Claude Desktop's local (stdio) server stopped working | Script was hard-coded to HTTP mode | Use the `--http` switch (§10.5, Step 2) so the default stays stdio |
+| Slow or unstable responses | Free-plan limits, or long queries | Keep result sets small (add `TOP`), and upgrade or deploy properly for heavier use |
+
+**Tip:** open `http://127.0.0.1:4040` to see each request's headers, body, and the server's response, and **Replay** a request after fixing the code.
+
+### 10.8 Security when using ngrok
+
+Anyone who has or guesses the URL can call your tools. With `my-datagpt-server`, that includes running `SELECT` queries against your database. To keep that risk small:
+
+- Use ngrok only with **demo or sample data**. Never point it at work, customer, or regulated (PCI, AML) data.
+- **Stop the tunnel** (Ctrl+C) when you aren't using it.
+- **Remove risky tools** from the HTTP mode, for example skip `get_engine` when started with `--http` (§8.3).
+- Use a **read-only SQL login** (`db_datareader`).
+- **Add authentication** before sharing the URL. Good options are an MCP-compliant OAuth/bearer auth provider in FastMCP, or ngrok **Traffic Policy** rules such as IP restrictions. Browser-based login at the ngrok edge (OAuth or basic auth) generally won't work with Claude's connector client.
+- Set **per-tool permissions** in Claude (§8) so data-returning tools need approval.
+- **Review the 4040 inspector** and server logs for unexpected calls.
+
+```mermaid
+flowchart TD
+    Q1{Real or sensitive data?} -- Yes --> NO["Don't use ngrok.<br/>Deploy with proper auth<br/>(e.g. AWS + OAuth)"]
+    Q1 -- "No, demo data" --> Q2{Sharing the URL<br/>with others?}
+    Q2 -- Yes --> AUTH["Add auth + IP restrictions<br/>+ remove risky tools"]
+    Q2 -- "No, just me" --> MIN["Read-only login<br/>+ per-tool approval<br/>+ stop tunnel when done"]
+    AUTH --> OK([Run tunnel])
+    MIN --> OK
+```
+
+> 🔍 **Zoom:** [Open interactive view (pan/zoom)](https://mermaid.live/view#pako:eNpNkc1uwjAQhF9l5UtBEKpyRBUIiUNRWyh_qirCwcVL4uJ4I9sBoYh37yZNS32xNGPNfLsuxZ4UigGIg6HzPpUuwHoSW-CzeCiXKA2QA4_W66BPCEoGObpCFMEHer6GMJtvYzEhexeg8Ag2cXTsPX66--EEc0MXOOuQQu4oRweyCGnttbCX9GD8voIOzMestmOx--2t4mMxoy4ozKjujEVdtuiXK4bUNoGQImyWL3VaXUGsOD-6Nin9_5DjzfqJMcdK1QhcOn0Dhz44vQ-arK9jOixlxFM67Y8XCETG37D6N6yvwgfIsIF6nc44m3elIrLmAoYSbZtAHjqqckDmvIKTNI3uA-UQCmvRwDlFC4os_nVVuHX0_Lm1XRa2eblr_9hc2LixFV0QGbpMalV9YxkLXkOFNmBWhQdZmBCLa_WMJ6fVxe7ZCq5AVoqcd4sTLRMns0a-fgPkpadu)
+
+
+### 10.9 Alternatives to ngrok
+
+| Option | Good for | Notes |
+|---|---|---|
+| **ngrok** | Fastest demo, free static domain, request inspector | Public URL. Free plan has limits. |
+| **Cloudflare Tunnel** (`cloudflared`) | Free tunnels on your own domain | Can use Cloudflare Access policies |
+| **Tailscale Funnel** | Users who already use Tailscale | Public HTTPS on a `ts.net` name |
+| **`mcp-remote` bridge** (§9.3) | Claude Desktop reaching an internal or VPN server | No public exposure, but Desktop only |
+| **Cloud deployment** (AWS ECS / App Runner / Lambda + API Gateway) | Production, team use | Real auth, monitoring, and scaling, with data access through private networking |
+
 ---
 
-## 10. Troubleshooting
+## 11. Troubleshooting
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
@@ -744,7 +978,7 @@ flowchart LR
 
 ---
 
-## 11. Security checklist
+## 12. Security checklist
 
 - [ ] Use a **least-privilege** service account (for example, a read-only SQL login for `my-datagpt-server`).
 - [ ] Validate inputs **on the server**. Don't rely only on client permissions.
@@ -763,5 +997,6 @@ flowchart LR
 - Python SDK: <https://github.com/modelcontextprotocol/python-sdk>
 - TypeScript SDK: <https://github.com/modelcontextprotocol/typescript-sdk>
 - MCP Inspector: <https://github.com/modelcontextprotocol/inspector>
+- ngrok docs: <https://ngrok.com/docs>
 - Reference servers: <https://github.com/modelcontextprotocol/servers>
 - Claude Desktop MCP setup: <https://modelcontextprotocol.io/quickstart/user>
