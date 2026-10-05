@@ -94,25 +94,25 @@ flowchart LR
 
 ```mermaid
 flowchart TB
-    User([👤 User])
+    User([User])
     subgraph Host["Claude Desktop (Host)"]
         LLM["Claude (LLM)"]
         PERM["Permission layer<br/>allow / ask / deny"]
-        C1["MCP Client #1"]
-        C2["MCP Client #2"]
-        C3["MCP Client #3"]
-        LLM <--> PERM
-        PERM <--> C1
-        PERM <--> C2
-        PERM <--> C3
+        C1["MCP Client 1"]
+        C2["MCP Client 2"]
+        C3["MCP Client 3"]
+        LLM --> PERM
+        PERM --> C1
+        PERM --> C2
+        PERM --> C3
     end
-    User <--> LLM
+    User --> LLM
 
-    C1 <-- "stdio (JSON-RPC)" --> S1["my-datagpt-server<br/>(local Python process)"]
-    C2 <-- "stdio" --> S2["filesystem server<br/>(local Node process)"]
-    C3 <-- "HTTPS (Streamable HTTP)" --> S3["Remote server<br/>(e.g. Jira / internal API)"]
+    C1 -->|"stdio (JSON-RPC)"| S1["my-datagpt-server<br/>(local Python process)"]
+    C2 -->|"stdio"| S2["filesystem server<br/>(local Node process)"]
+    C3 -->|"HTTPS (Streamable HTTP)"| S3["Remote server<br/>(e.g. Jira / internal API)"]
 
-    S1 --> DB[("SQL Server<br/>localhost\\MSSQLSERVER03<br/>DB: retail")]
+    S1 --> DB[("SQL Server<br/>instance MSSQLSERVER03<br/>DB: retail")]
     S1 --> API["Stock price API"]
     S3 --> SaaS[(SaaS / internal system)]
 ```
@@ -142,7 +142,7 @@ sequenceDiagram
     H->>S: tools/list
     S-->>H: [get_engine, get_tables, get_schema, validate_select_query, run_query, get_stock_price]
     Note over H,S: Session is ready. Tools now appear in Claude's tool menu.
-    S--)H: notifications/tools/list_changed (optional, if tools change)
+    S-->>H: notifications/tools/list_changed (optional, if tools change)
     H->>S: shutdown (close stdin / end HTTP session)
 ```
 
@@ -435,7 +435,9 @@ flowchart LR
     A["@mcp.tool()<br/>def get_schema(table_name: str)"] --> B["name: get_schema"]
     A --> C["description: docstring"]
     A --> D["inputSchema (JSON Schema)<br/>from type hints:<br/>{table_name: string, required}"]
-    B & C & D --> E["Returned in tools/list<br/>→ Claude reads it to decide<br/>when and how to call"]
+    B --> E
+    C --> E
+    D --> E["Returned in tools/list<br/>→ Claude reads it to decide<br/>when and how to call"]
 ```
 
 **Tips for good tools**
@@ -596,7 +598,7 @@ flowchart LR
         CD[Claude Desktop]
         P1["my-datagpt-server<br/>(child process)"]
         SQL[("SQL Server<br/>MSSQLSERVER03")]
-        CD <-- "stdio" --> P1
+        CD -->|"stdio"| P1
         P1 --> SQL
     end
 
@@ -607,7 +609,7 @@ flowchart LR
         LB --> RS --> SYS
     end
 
-    CD <-- "HTTPS · Streamable HTTP<br/>POST /mcp (+ SSE)" --> LB
+    CD -->|"HTTPS · Streamable HTTP<br/>POST /mcp (+ SSE)"| LB
 ```
 
 ### 9.2 Running the same server over HTTP
@@ -674,8 +676,8 @@ sequenceDiagram
 
 ```mermaid
 flowchart LR
-    CD[Claude Desktop] <-- stdio --> MR["mcp-remote<br/>(local proxy)"]
-    MR <-- "HTTPS over your network / VPN" --> RS[Internal remote MCP server]
+    CD[Claude Desktop] -->|stdio| MR["mcp-remote<br/>(local proxy)"]
+    MR -->|"HTTPS over your network / VPN"| RS[Internal remote MCP server]
 ```
 
 ---
