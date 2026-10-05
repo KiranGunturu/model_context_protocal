@@ -1,5 +1,7 @@
 # Model Context Protocol (MCP): A Practical Guide
 
+> **Tip:** Under each diagram there are two links. **Open interactive view** opens it on mermaid.live, where you can pan and zoom (internet required). **Full-size SVG** opens the local image in the `diagrams/` folder next to this README, which works offline.
+
 This guide uses Claude Desktop as the client and **`my-datagpt-server`** as the example. That server is a local MCP server that connects Claude to a SQL Server `retail` database.
 
 ---
@@ -61,6 +63,9 @@ flowchart LR
     end
 ```
 
+> 🔍 **Zoom:** [Open interactive view (pan/zoom)](https://mermaid.live/view#pako:eNptkEFrwzAMhf-K8GmFBdr6MOitTcboSMe2HO0e3FhpzBI7OPLGKP3vc0gHKa1O0nvSB3onVjqNbAWsatxPWStPkH9KC7H6cDh61dWwwcp5FJKNDezS9xXsQIb5XD_BG5ShJ9eCsYTxgIyzvWT7ETLUeiHSRgWNkGH_Ra7bQ5IkUCzEQ_GRQ4H-G_3s6mBcWIpX49Udg4sXQ7k6TK2l2GbPsD6ipX_-1L0QbyU-kbhIx1827h6E30L4FQStlpY9AmvRt8roIdiTZFRjizIOkmmsVGhIsvOwpgK54teW0SIfMCqh04owMyom2V7k8x-0t3Qo) · [Full-size SVG](diagrams/01-before-mcp.svg)
+
+
 ```mermaid
 flowchart LR
     subgraph After["With MCP: M + N"]
@@ -72,6 +77,9 @@ flowchart LR
         P --> M3[GitLab MCP]
     end
 ```
+
+> 🔍 **Zoom:** [Open interactive view (pan/zoom)](https://mermaid.live/view#pako:eNptkLFqwzAQhl_l0NpkSLJlKCR2CS12ceuhg-RBsc6xiCUZ-dRSjN-9cpvBkN52__cdHP_IaqeQ7YE1nfuqW-kJsndhIc4Qzhcv-xYODaHngn1oaiFPij3k8ACvglV_4jzHDU86GRRCisOVXF_Bev0IxTjGg2laiFv-nD7B4YKWbs4C7ngSBnIGju6eFr9BvuHlWwYl-k_08zvVnbHlL9rL_9mOnzRl8rygaJWwbAXMoDdSq7mOUTBq0aCIi2AKGxk6EmyaNRnIld-2joh8wJiEXknCVMtYmLnF0w8X02Ow) · [Full-size SVG](diagrams/02-after-mcp.svg)
+
 
 | Problem | How MCP addresses it |
 |---|---|
@@ -117,6 +125,9 @@ flowchart TB
     S3 --> SaaS[(SaaS / internal system)]
 ```
 
+> 🔍 **Zoom:** [Open interactive view (pan/zoom)](https://mermaid.live/view#pako:eNptU9Fu2jAU_ZUrPwVptIW8VVOlEZC6CroM071gHkxyAQvHRrazKWr777tO0GhW_GDJ5_gen3tsv7LClsjuge20_VMcpAuwmggDNF48umQd582gQ3y93Tt5OsCj9WEtWKZlXSJM0R-DPUES4YFgm253HPP54rIvoVWfzmfLyOfoKuW9sga0bNB93brbB6nJEdyC9EeaSzRNrzQbUeEiyyHTCk2AUZ8d99lxn037bPq_ZxgOH1pzfastnI2ugeNrYNqBaMpLoi1DRwjTYdkoIm-C-VAqC8kT__E8XOYZBfUGPDZZNcNSBrk_hSHV_z7Hk2hbSA15Ew4U28nZAr2_pJuNP8q2WjGSndLoGx-wgs9az_QUriilZ6XH1SrnkPDgUFZyqxEi0vmMgS6xsgF7unizv4En5STdoDIBnaFjvuXfO_VOn7cBwHSyTgTjP-fALwLK-CBNgbDgxPDZ8tdseZe21HRyDw6DVFqwwaYnRQeQHR5scaR2FJUT8q8f3vYDXEq-TuL80VuXTdRjX4BV9C6lKuP3eBUsHLBCQQvBStzJWgfB3uM2WQfLG1MQFVyNhNQnujGcKknfpTrD738BRtMCvA) · [Full-size SVG](diagrams/03-architecture-components.svg)
+
+
 ### 3.2 Protocol layers
 
 ```mermaid
@@ -126,6 +137,9 @@ flowchart TB
     L3["Transport layer<br/>stdio (local) | Streamable HTTP (remote)"]
     L1 --> L2 --> L3
 ```
+
+> 🔍 **Zoom:** [Open interactive view (pan/zoom)](https://mermaid.live/view#pako:eNpFkNtKAzEQhl9lyFULVnu4EIoU1AoioqW7d8aLaXa2DeSwzk6QUvvupsfNTZg_yffNZKdMrEhNQdUu_poNskD5pAPk9T760uqxaZw1KDYGcLglfljx3ayM0bWg03C4uocltTGxoWuw4OgbuZYF-swI60v9koFWjkitvs-ucXbNUfAkmcJb8fkxWC6eYXw7PCqZfhK1HZWpbWJoO2uIYutzq9fQ2ZrM1jjqTJNsKhlDfp6H7WZqpbIRei4adH34g0KY0OPKEbyW5QJ6TD4K9TvSCAaDWW79tE10UDegPLFHWx2-dKeVbMhn9xS0qqjG5ESr_eEaJonFNph8JJwoJ6mpUGhucc3oz_H-H-1-hw8) · [Full-size SVG](diagrams/04-protocol-layers.svg)
+
 
 ### 3.3 Connection lifecycle
 
@@ -145,6 +159,9 @@ sequenceDiagram
     S-->>H: notifications/tools/list_changed (optional, if tools change)
     H->>S: shutdown (close stdin / end HTTP session)
 ```
+
+> 🔍 **Zoom:** [Open interactive view (pan/zoom)](https://mermaid.live/view#pako:eNqFUrFu2zAQ_ZWDltqALO8esiSDugQBZHSJAuFMnmUiFMmSxwSu4X_v0XKRCh2q6ah79_je8V0q5TVVO6gS_czkFD0ZHCNOvQP5MLN3eTpQnM8BIxtlAjqGFjDBo8WsCZ4ovbMPsHq0hhyv_0V3BT2dNxoZx8CbRPGjsM7IdvPw0O0gBfx0EKJXlBKsEmvj17AFH8hBu9-_QJKG8csp4wwbtOYXwUVm2Stvf1AsuBoUBjwYKwhKcrrJ--6O_jpTdBvhaHcQKWXL_5nfwYW9t8IjcJ-jqGya5lrDbOYv2rsy59kcjUIWqrT90qkXqBvn1prES02vI_FAbjSOaig148EWF6VO6kQT1vAhhLJTGhJZUjzII8azCMzuT3lDi6n3IUSj6G2-5NkzgRfV0NaioZv3CiaJN9TnBvZFlTj4BAyBMMqa76_9Ld0kw0QuN0vJS8NfxgZ1QjeShpUPpYe2BnOcncPcWy-TcMqsvYRhpaxPBCUKTpJATi-CIFNVDdVEcUKjS44vfcWyGurl0FeajigP21fXAitx7s5OSYtjlq1WOZTl3TN__339DeRQDxs) · [Full-size SVG](diagrams/05-connection-lifecycle.svg)
+
 
 ### 3.4 A real tool-calling flow
 
@@ -184,6 +201,9 @@ sequenceDiagram
     C-->>U: Formatted table: top 3 per state
 ```
 
+> 🔍 **Zoom:** [Open interactive view (pan/zoom)](https://mermaid.live/view#pako:eNqVVE2P2jAQ_SujnFgV6KE3DltBAIHER0tAe0GKjDOFqI6d9Qe7EeK_dxwTYFW6UnOJbL-ZeW_8xqeIqwyjHkQGXx1KjsOc7TUrthLoY84q6Yod6suaW6VhA8zAxjSbJdM253nJpIXYH8WCuQyhNZvNn_6GTO4gQzS_rSqhNVHGwhf4gbrIjcmVNA8iEx9ZVJ2MWbYvbYcYHB-RGA48MPk5g6RGQEujZbmglAG86Tw_xz3YRmuq_Q1KrTLHrYFdBUclXIGQS0DGD2Ass7iNQlhMYZMeWKVE6gzCHm1q2U6ggdM5QCYESQLEfOVMiDtQQCSEGA56kIxmo3gN6_5gNkoX_fkIxqvlHKaL8XI176-ny0WaxJPRvN-tIUmIHg46oQK-lygNmjYcdFoqkfMqzRSntdIZ6muxQFmjccI2FIP6Wsb9wSN5hh-wYHCqFaSSFejbdikRfSo6hH7kUbez3TS8zteGV0eXltuqDYYJr6jb7f4nVe1kSvbVFZzqnyf5Ml2T1fZ76Cc-I6yWL-liMx-MVq2nukRDnwkLa8oEBi2lpNAFYmaAlcTzyERz_Y3UTQ_6Qqi3W9XvN8DmorRGhG2U2b_6dM1w8wYBqGZOHqdWm1zuBclDlnWUFNXFNR-dhO_InUW4S3S1iVZvD63gR4LTNTZj9kmng-Kx0gWzFjOoreCR9ejQdIUZkVEbooLml-WZf09O28iSAWh4_GVk-Iv5nNHZw_yzklSS05HVjiwQudILvrw9l-3zH9Hzdws) · [Full-size SVG](diagrams/06-tool-calling-flow.svg)
+
+
 Claude never connects to SQL Server directly. It can only **request** a tool call. The host decides whether the call runs, and the server decides what the call is actually able to do.
 
 ---
@@ -213,6 +233,9 @@ flowchart LR
     BRIDGE --> RESTART
     RESTART --> USE
 ```
+
+> 🔍 **Zoom:** [Open interactive view (pan/zoom)](https://mermaid.live/view#pako:eNpdUl1vGjEQ_CsrP1SgliPAQxVUpUoPEkVKgRykSXV3ioy9gBufTf1BihD_vb47oDR-8-7Ozszu7gjTHEkfyELqN7aixsF9kikIb-rCr5GOEDlQUPgG3-MJWDQbNCAUxJJ6jjBA--r0Om9Cq3UFD53d0woNAtdoQTgwXn3d1w0fOqEEMjJWUGyhoGwlFGakxnV3E8pe6bIksxAVbD0_4bol7mfoV1YOn2fpnbKOSgkbQWGKzgm1tJD5bueyC8M_DpUVWtn8HD7SFTq-uU2vOQengVX6X3it_4VptRDL6JfVKv9fb4KFdgiPyT00Vs6tbb_djqKoeZTe2038XAomt2AwuKJziSftvXPt8XiUvtcba6WQOW1OkVIf89bpAtgxmZ-3y0hw0_gxGUE7LMKhUVSCVnJ7lPQtuRvcDtOMxJUpWAiJ8BHCUFumNjM3gi_xy9y0rxoWMVBfXNDPl1EvtDhwhVFVzZLhdHadzNIbL4PD3z4s9UMwasvzeH8ENTKsqEI-ToeNdKa1tEA3VMhyMOXlhBG5vHlgGY-OtXWg1n7OXMcPn3_F5BOQAk1BBS8PeJcRt8IiHFQ_DIjjgnrpMrIvy6h3erpVLKSc8Rgifs2pw4GgS0OLQ3j_F7Sn8Jo) · [Full-size SVG](diagrams/07-claude-desktop-options.svg)
+
 
 **Day-to-day use**
 
@@ -301,6 +324,9 @@ flowchart LR
     F --> G[Register tools in UI as<br/>server-name → tool-name]
     E -- error --> X[Server shows as failed<br/>check mcp-server-*.log]
 ```
+
+> 🔍 **Zoom:** [Open interactive view (pan/zoom)](https://mermaid.live/view#pako:eNpNkU1rwzAMhv-K8HHrB-ttZRTWrzHYqWUwSErRbCXxGtvBdlq60v8-xclhvhjJj95Xkm9COkViDqKo3UVW6CN87HILfF6zVY2tIlhTOEXXQIj8HA4wHi9gme0IFchEHFVPHKWzhS4nP8HZQy-yTPTqtnUeCGUFZKO_grZgZLMnfyYf7j26Sug6y8W-wYuFxjtJIcxfvv10IZ0xaBU8Avoy8EX2nIvBZJ0qN5m2Omqs9S9BxXCo8ETg2IJbV9oN9CbR2yw6V4dprUMcgafgWs92Q8zepol9NJRtU9kbz11ykjVTfTfJ5ztgSF2GNNDYoiHI29nT8yxRKfHPHch73ken95X1S4BQuUtgHShQ16T6oSuSp25R40H4YVK7koXECIQhb1Cr7u9uuYgVGco5yIWiAts65uLeYdhGt79ayU_Rt8SZtlEYaa2x9GiG9P0PhDysWg) · [Full-size SVG](diagrams/08-startup-flow.svg)
+
 
 ---
 
@@ -440,6 +466,9 @@ flowchart LR
     D --> E["Returned in tools/list<br/>→ Claude reads it to decide<br/>when and how to call"]
 ```
 
+> 🔍 **Zoom:** [Open interactive view (pan/zoom)](https://mermaid.live/view#pako:eNpdkU9rAjEQxb_KkJOCVuqtS5FW7aWUFvTYFInJrBvIn212goj43TublbaY25v55b3J5Cx0NCgqELWLR92oRPC2kQH4PH9K8eR1e0cxutH4cZ9mC4M1HJB2nW7QqxGpvcNdUB4r6CiNpfiC6XQBS746VP9g7l19C7JixGCnk23JxlCBiZotbDjcgGsGbWgzbYsNjF63H-8wiGGoOkUPdGoRGhuoq0rxfDMbG08g4Xe2Cc3lN2NZMl4Gsfov1oPg9A1STgEN2AD9LrqZsx2VFJnn9w9zWDmVDbK9Mh1YYgoMamuwQMcGA6hgoInHvqWVc2UAMQHhMXllTf8FZymIX4WSRb-cWmVHUlx6TGWK21PQ3KKUkSu5NYpwbdUhKX8tX34AM7CVlQ) · [Full-size SVG](diagrams/09-decorator-mapping.svg)
+
+
 **Tips for good tools**
 
 - **Write the docstring for the model.** Claude decides which tool to call from its name, description, and parameter types.
@@ -467,6 +496,9 @@ flowchart LR
     R --> T[Verify tools in chat tools menu]
     T --> P[Set per-tool permissions]
 ```
+
+> 🔍 **Zoom:** [Open interactive view (pan/zoom)](https://mermaid.live/view#pako:eNpNkEFuwyAQRa8yYl3nAF1UqpyN1VaNHKte4CiiMHZoDVgwtLKi3L1AvCgr5vH-MHBl0ilkj8DG2f3Ki_AEr-1gIa2e914TQkD_g363rCeoqidoeIeBQFt4qw_Q2LCgJOdP91CTHPiMUyhu_w--vxRU82elgBzIWUSFZ4Xhm9xyls6Oetp9BWe3VnXxW96m6_JcdQnA_h7YpLZIHf9Ar8c19XVzyLOlp9BWGbRxs7tiH_gRCRb0VRbyxugQtLMhaewBmElEaJW_5TowuqDBIRUDUziKONPAblkTkdxxtTIdkY-YSFyUINxrMXlhNnz7A0_wcoA) · [Full-size SVG](diagrams/10-dev-workflow.svg)
+
 
 ---
 
@@ -529,6 +561,9 @@ flowchart TD
     F -- Rejected --> X4[Error returned to Claude]
     F -- OK --> G[Tool executes → result to Claude]
 ```
+
+> 🔍 **Zoom:** [Open interactive view (pan/zoom)](https://mermaid.live/view#pako:eNptUlFv0zAQ_isnP4G0blrhhQkNtUnHA1BgHRIo6YMXXxIzxw72ZVlV9b9zTlLUSvjJd77v--67814UTqG4AVEa1xe19AQPaW6BzyJLjOwUQi8tBSAHhTQGJN-c2cJsdgvL_QPfAa18NKjeP_qrW22Bah2AuejDYWRacjHkYu3gFbmq4lJwZfk6FwPJz-ts7Shm0PML60y6koAFtyccvzAMkGTUbdE3OgTtLAQk0raaBJNRcGlc8cSUV7DGZ_SRzfVH1XmWRDseyy6g2p4B14gqgGxb756lmRDp_kdgEs41Ld0MZheREJwtkDUWppe7MIpwmKLdTe2kkTXGo_Kb42DJGfZb4zjYXgZQaPW_ZtKxmf-ITB2tsnv802Egtm8pTu5L8o3vns2eGzrt7QgeC1ZDcLffDKhZ0NxXUWPxFAaHeFld8oykmjlrdrD5_hl4IlpJcv5iqEiXYFzFa_e6qilMlu-i7j3-xoJ4AYPtt9nKe-eZjTpvTze9PcF8_TRUf8zGn_WCRUe89bybX7-bMzZ0hs6Q4gJEwx9BahX_8T4XPNEGcw5yobCUDMjFIZbJjtxmZwt-It8hZ7qWnWCqZeVlM6UPfwGWlvmy) · [Full-size SVG](diagrams/11-permission-layers.svg)
+
 
 ### 8.1 Layer 1: per-tool permissions in Claude Desktop
 
@@ -612,6 +647,9 @@ flowchart LR
     CD -->|"HTTPS · Streamable HTTP<br/>POST /mcp (+ SSE)"| LB
 ```
 
+> 🔍 **Zoom:** [Open interactive view (pan/zoom)](https://mermaid.live/view#pako:eNplUk1LAzEQ_StDTi1aWvEgiAh2W_CwYt0UoTQesptpd3GTLPlQivrfnWxFXZ3LJG9eZt488sYqq5BdAtu19rWqpQuQF8IAhY_l3smuhlx2wXZbwTY2Omj7m2BPR1aKbLHNWhkVwgL9M1V_1VZn9FAfJkoGue_CxKN7QXdVuun1qKqbVkHnbIXejwct-UO-HQlGCfjPiztOAF8Wj8tidi7YeKABJpPrd8F8UI0V7J0m_1aRqqnrEUOjhPmzZtbaqEhsn2EKSTFUaAK6gbR8TqTb9XrFU5vONib04tY5hxO4v4mhHvALTvwCtQ0Id9kKBg5YE2Rj0NG8XOpSSTosM_7HjA3fjuayeqZ54A8-oPbjgaJ-u4Ifl9zwf0t-u3PULeJsVl4ADw6llmWLkPBe0uqer2Gqqw5GJ8D5cpyszOfCsFNgGp2WjUr_5U2wUKNGQRfBFO5kbINgH4kmY7D8YCoqBReRkNiRm7hoJFmtv-CPT1KKvnQ) · [Full-size SVG](diagrams/12-local-vs-remote.svg)
+
+
 ### 9.2 Running the same server over HTTP
 
 FastMCP can serve over Streamable HTTP with a single change:
@@ -648,6 +686,9 @@ sequenceDiagram
     S-->>C: JSON result or SSE stream
 ```
 
+> 🔍 **Zoom:** [Open interactive view (pan/zoom)](https://mermaid.live/view#pako:eNqNUsFu00AQ_ZWRT46Km7Ti5EMlYyIoUBJ1g3LAVTWsh3bV9a7ZnSWiVf-dcZwCKUHCt1m_ee_Nm3nItG8pKyGL9C2R0_Ta4E3ArnEgHyb2LnVfKIx1j4GNNj06hhowwkW9hNoacvw3oFIDokp864O5RzbegaLw_RDZFnpJnWfaco44yN-uVks1adzYURdnZ6qE5UKtYNrpHowzbNCae4LceWB_R24yYlUh4LqEl7MTOIL1el0MTsSo0SgieaDoU9AEHTG2yAifLj9M9nTezEXmeEPWFnfOb9zUSx63RR_EpWZqiyeOfUX8c-LruJ0klvC5Ule_6SvhXwyO4PT45FlItaxEPC_f13PIkxBANDcuyrQ7f9UvKa0pxuvt3P8R0Z5MCa8Ig5AfSu10NhMHF7ovlAgIujhv_yHA3ts4tSYyTHeFRmsh3xiZLo7tYFrhO6T0Ti0-ggSZLIMPoNQcIgcaLjB7AVlHoUPTDhf60GSywI4aKZqspa8oPU32OMCGQ1U_nJZfHBLJS-plqU_XvHt-_Amr-PGd) · [Full-size SVG](diagrams/13-oauth-flow.svg)
+
+
 ### 9.3 Connecting Claude Desktop to remote servers
 
 **Option A: Custom Connector (recommended for public HTTPS servers)**
@@ -679,6 +720,9 @@ flowchart LR
     CD[Claude Desktop] -->|stdio| MR["mcp-remote<br/>(local proxy)"]
     MR -->|"HTTPS over your network / VPN"| RS[Internal remote MCP server]
 ```
+
+> 🔍 **Zoom:** [Open interactive view (pan/zoom)](https://mermaid.live/view#pako:eNotjk1vgzAMhv-K5dMmDfU-Tb3AYZPGhKDqhfSQEbdFTTAyTjtU-t-XrvPt_XrkK3bsCF8B954v3dGKwmdtBkiXF23ubXQEBU0n5XEHWbZeJnU9L1DWrcHQjZlQYKW3b1mtnzx31sMo_DM_G9w9OGX9tzP4vtlUDfCZBGaOAgPpheUEK9hWXwYXqJv2Y1CSIUEeWCjzCiaStEk0fAEMJMH27v7y1aAeKZBJwqCjvY1eDd7uNRuVm3noUqQSKTlxdFap6O1BbPi3b79T_lTh) · [Full-size SVG](diagrams/14-mcp-remote-bridge.svg)
+
 
 ---
 
